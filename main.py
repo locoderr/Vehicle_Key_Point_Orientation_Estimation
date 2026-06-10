@@ -18,7 +18,9 @@ def main(args):
         net = KP_Orientation_Net.KeyPointModel()
         if args.phase == 'train':
             # Load the stage 1 checkpoint and freeze its weights
-            net.coarse_estimator.load_state_dict(torch.load(args.stage1_ckpt)['net_state_dict'])
+            net.coarse_estimator.load_state_dict(
+                torch.load(args.stage1_ckpt, map_location=device, weights_only=False)['net_state_dict']
+            )
             for param in net.coarse_estimator.parameters():
                 param.requires_grad = False
             print('stage1 weights have been initialized with pre-trained weights and are frozen!')
@@ -31,7 +33,7 @@ def main(args):
     print('Total number of trainable Parameters = %s' % sum(p.numel() for p in net.parameters() if p.requires_grad))
 
     if args.resume or args.phase == 'test':
-        checkpoint = torch.load(args.resumed_ckpt)
+        checkpoint = torch.load(args.resumed_ckpt, map_location=device, weights_only=False)
         net.load_state_dict(checkpoint['net_state_dict'])
         print('Resumed Checkpoint :{} is Loaded!'.format(args.resumed_ckpt))
 

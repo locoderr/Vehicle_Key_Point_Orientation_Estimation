@@ -33,7 +33,7 @@ class Normalize(object):
     The object to normalize the images based on the Veri-776 training set mean and standard deviation
     """
     def __init__(self, dataset_mean_std=paths.paths.VERI_MEAN_STD_FILE):
-        mean_std = torch.load(dataset_mean_std)
+        mean_std = torch.load(dataset_mean_std, map_location='cpu', weights_only=False)
         self.mean = mean_std['mean'].numpy()
         self.std = mean_std['std'].numpy()
 

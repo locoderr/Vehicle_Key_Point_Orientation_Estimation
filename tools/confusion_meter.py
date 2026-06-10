@@ -1,12 +1,8 @@
 import numpy as np
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import itertools
-from subprocess import Popen, PIPE
-cmd = ' uname -n'
-proc = Popen(cmd, stdin=PIPE, stdout=PIPE, shell=True)
-stdout, stderr = proc.communicate()
-if not stdout.split('.')[0] == 'ramawks80':
-    plt.switch_backend('agg')
 
 
 class ConfusionMeter:

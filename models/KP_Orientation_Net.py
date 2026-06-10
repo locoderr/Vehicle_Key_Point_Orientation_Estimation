@@ -1,5 +1,6 @@
 import torch.nn as nn
 from torchvision import models
+from torchvision.models import VGG16_BN_Weights
 import torch
 
 
@@ -10,18 +11,19 @@ class CoarseRegressor(nn.Module):
     def __init__(self, n1=20):
         super(CoarseRegressor, self).__init__()
         self.N1 = n1
-        # VGG Convolutional Layers
-        self.A1 = nn.Sequential(*list(list(models.vgg16_bn(pretrained=True).children())[0].children())[:7])
-        self.A2 = nn.Sequential(*list(list(models.vgg16_bn(pretrained=True).children())[0].children())[7:14])
-        self.A3 = nn.Sequential(*list(list(models.vgg16_bn(pretrained=True).children())[0].children())[14:24])
-        self.A4 = nn.Sequential(*list(list(models.vgg16_bn(pretrained=True).children())[0].children())[24:34])
-        self.A5 = nn.Sequential(*list(list(models.vgg16_bn(pretrained=True).children())[0].children())[34:])
+        # VGG Convolutional Layers — load backbone once, then slice
+        _vgg_features = list(models.vgg16_bn(weights=VGG16_BN_Weights.DEFAULT).features.children())
+        self.A1 = nn.Sequential(*_vgg_features[:7])
+        self.A2 = nn.Sequential(*_vgg_features[7:14])
+        self.A3 = nn.Sequential(*_vgg_features[14:24])
+        self.A4 = nn.Sequential(*_vgg_features[24:34])
+        self.A5 = nn.Sequential(*_vgg_features[34:])
         # Coarse Regressors
         self.A6 = nn.Sequential(nn.Conv2d(512, 512, 1, padding=0), nn.BatchNorm2d(512), nn.ReLU())
         self.A6to7 = nn.Sequential(nn.Conv2d(512, self.N1 + 1, 1, padding=0), nn.BatchNorm2d(self.N1 + 1), nn.ReLU())
         self.A3to7 = nn.Sequential(nn.Conv2d(256, self.N1 + 1, 1, padding=0), nn.BatchNorm2d(self.N1 + 1), nn.ReLU())
         self.A4to7 = nn.Sequential(nn.Conv2d(512, self.N1 + 1, 1, padding=0), nn.BatchNorm2d(self.N1 + 1), nn.ReLU())
-        self.Up = nn.Upsample(scale_factor=2, mode='bilinear')
+        self.Up = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False)
 
     def forward(self, x):
         """

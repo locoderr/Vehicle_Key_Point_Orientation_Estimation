@@ -57,10 +57,10 @@ def sample_visualizer(outputs, maps, inputs):
     map_out, map1, sample_in = outputs[rand], maps[rand], inputs[rand]
 
     plt.figure(2)
-    plt.imshow(sample_in.transpose(0, 2).transpose(0, 1).cpu().numpy())
+    plt.imshow(sample_in.transpose(0, 2).transpose(0, 1).cpu().detach().numpy())
     plt.pause(.05)
-    map_out = map_out.cpu().numpy()
-    map1 = map1.cpu().numpy()
+    map_out = map_out.cpu().detach().numpy()
+    map1 = map1.cpu().detach().numpy()
 
     plt.figure(1)
     for i in range(0, 20):

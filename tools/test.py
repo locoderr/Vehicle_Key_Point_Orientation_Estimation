@@ -5,7 +5,6 @@ from tools.utilities import sample_visualizer, accuracy as Acc
 from tools.confusion_meter import ConfusionMeter
 import os, sys
 from tqdm import tqdm
-import pdb
 
 Orientation_labels = ['front', 'rear', 'left', 'left front', 'left rear', 'right', 'right front', 'right rear']
 
@@ -62,7 +61,7 @@ def test(args, net, epoch=None):
                     coarse_kp, fine_kp, orientation = net(image_in1, image_in2)
                     if args.visualize:
                         sample_visualizer(fine_kp[:, :20, :, :], gt_heatmaps[:, :20, :, :], image_in1)
-                    _, predicted_orientation = torch.max(orientation.data, 1)
+                    _, predicted_orientation = torch.max(orientation, 1)
                     if args.phase == 'train':
                         orientation_cmf.update(predicted_orientation, gt_orientation_label.squeeze())
                     total += gt_orientation_label.size(0)

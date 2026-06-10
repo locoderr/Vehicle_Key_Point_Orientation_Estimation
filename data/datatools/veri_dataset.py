@@ -7,7 +7,6 @@ import scipy.ndimage as ndimage
 from skimage import io
 from tools.paths import paths
 from . import transforms
-import pdb
 
 
 pose_flip_lr_dict = {'0': 0, '1': 1, '2': 5, '3': 6, '4': 7, '5': 2, '6': 3, '7': 4}
@@ -85,7 +84,7 @@ class VeriDataset(Dataset):
         # load the image
         im_path = os.path.join(paths.VERI_DATA_PATH, self.anno[item].split(' ')[0])
         image = io.imread(im_path)
-        image = image.astype(np.float)
+        image = image.astype(np.float64)
 
         image = self.Normalize(image)
         image_in1, image_in2 = self.Rescale(image)

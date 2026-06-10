@@ -20,9 +20,11 @@ def train(args, net):
                               num_workers=args.num_workers)
 
     # Train Stage 1 for Coarse Heatmap Generation Using Pixel Based Classification
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     if args.use_case == 'stage1':
         params = net.module.parameters() if args.mGPU and (torch.cuda.device_count() > 1) else net.parameters()
-        Heatmap_criterion = nn.CrossEntropyLoss(train_set.key_point_distribution.float().cuda())
+        Heatmap_criterion = nn.CrossEntropyLoss(train_set.key_point_distribution.float().to(device))
 
         optimizer = torch.optim.Adam(params, lr=args.lr, weight_decay=args.weight_decay)
         timer = Chronometer()
@@ -32,7 +34,7 @@ def train(args, net):
             os.mkdir(args.ckpt)
 
         if args.resume:
-            checkpoint = torch.load(args.resumed_ckpt)
+            checkpoint = torch.load(args.resumed_ckpt, map_location=device, weights_only=False)
             start_epoch = checkpoint['epoch']
 
         best_error = 1000
@@ -116,7 +118,7 @@ def train(args, net):
     elif args.use_case == 'stage2':
         params = net.module.refinement.parameters() if args.mGPU and (torch.cuda.device_count() > 1) else net.refinement.parameters()
         Heatmap_criterion = nn.MSELoss()
-        Orientation_criterion = nn.CrossEntropyLoss(train_set.pose_distribution.float().cuda())
+        Orientation_criterion = nn.CrossEntropyLoss(train_set.pose_distribution.float().to(device))
 
         optimizer = torch.optim.Adam(params, lr=args.lr, weight_decay=args.weight_decay)
         timer = Chronometer()
@@ -126,7 +128,7 @@ def train(args, net):
             os.mkdir(args.ckpt)
 
         if args.resume:
-            checkpoint = torch.load(args.resumed_ckpt)
+            checkpoint = torch.load(args.resumed_ckpt, map_location=device, weights_only=False)
             start_epoch = checkpoint['epoch']
 
         best_error, best_accuracy = 1000, 0
