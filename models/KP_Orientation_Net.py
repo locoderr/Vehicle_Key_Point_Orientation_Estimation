@@ -79,13 +79,13 @@ class FineRegressor(nn.Module):
         # Key Point Estimation
         kp = self.L5(self.res2(x) + self.L4(joint))  # B * 20 * 56 * 56
         B, C, H, W = kp.shape
-        kp = self.Normalize(kp.view(B, C, W * H))
-        kp = kp.view(B, C, H, W)
+        # reshape instead of view: required for ONNX tracing with dynamic batch
+        kp = self.Normalize(kp.reshape(B, C, H * W)).reshape(B, C, H, W)
         # Orientation Estimation
         pose = self.pose_branch1(joint)  # B * 64 * 28 * 28
         pose = self.MaxPool(pose)  # B * 64 * 14 * 14
         pose = self.pose_branch2(pose)  # B * 32 * 8 * 8
-        pose = pose.view(-1, 2048)  # B * 2048
+        pose = pose.reshape(-1, 2048)  # B * 2048
         pose = self.FC(pose)  # B * 8
         return kp, pose
 
